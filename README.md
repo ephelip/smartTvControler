@@ -11,7 +11,7 @@ To install and run simply follow these steps:
 
 1)  Clone this repo
 
-2)  Open your terminal and run `node server.js`
+2)  Open your terminal and run `node server.js`. If using nodemon, run `nodemon server.js`.
 
 3)  Your server is now available at `http://localhost:6060/`
 
