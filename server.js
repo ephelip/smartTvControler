@@ -27,11 +27,24 @@ function parseJsonFile(filepath) {
         console.log("parse successfull %s", filepath);
         return resolve(json);
       } catch (err) {
-	console.log("Unable to parse %s", filepath);
+	console.log("Unable to parse ", filepath);
         return reject(err);
       }
     });
   });
+}
+
+function saveJsonFile(filepath,jsonObj) {
+	return new Promise((resolve, reject) => {
+		let jsonTextObj = JSON.stringify(jsonObj);
+		fs.writeFile(filepath, jsonTextObj, {encoding: 'utf8'}, (err) => {
+		  if (err) {
+			  console.log(`Unable to write ${filepath}`);
+			  return reject(err);
+		  }
+		  return resolve();
+		})
+	});
 }
 
 app.get('/channels', function(req, res) {
@@ -42,7 +55,7 @@ app.get('/channels', function(req, res) {
 	})
 	.catch((errReturned) => {
     		res.status(500).send('Erreur interne de serveur (QC powered)');
-	})
+	});
 });
 
 app.post('/channels', function(req, res) {
@@ -51,11 +64,23 @@ app.post('/channels', function(req, res) {
       return res.status(400).send({error:" you need url and description"});
     }
 
-    channels = parseJsonFile("channels.json");
-    channels.push(req.body);
-    console.log(req.body);
-    console.log("channel=",req.body.channel);
-    res.status(200).send("Successfully posted channel");
+    parseJsonFile("channels.json")
+    .then((jsonReturned) => {
+      jsonReturned.push(req.body);
+      return jsonReturned;
+    })
+    .then((jsonUpdated) => {
+      console.log(jsonUpdated);
+      return saveJsonFile('channels.json',jsonUpdated);
+    })
+    .then((done) => {
+      return res.status(200).send("Successfully posted channel");
+    })
+    .catch((errReturned) => {
+      console.log(errReturned);
+      return res.status(500).send('Erreur interne de serveur (QC powered)');
+    })
+
 });
 
 
