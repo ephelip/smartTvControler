@@ -1,7 +1,7 @@
 'use strict'
 var express = require('express');
 var bodyParser = require('body-parser');
-var fs = require('fs');
+const fs = require('fs')
 var app = express();
 var net = require('net');
 
@@ -118,8 +118,56 @@ app.post('/channels', function(req, res) {
       console.log(errReturned);
       return res.status(500).send('Erreur interne de serveur (QC powered)');
     })
-
 });
+
+
+app.get('/tvs', function(req, res) {
+    console.log("GET tv infos");
+    parseJsonFile("./displays.json")
+    .then((tvjson) => {
+	console.log(tvjson);
+	res.status(200).send(tvjson);
+    })
+    .catch((err) => {
+	console.log(err);
+	res.status(500).send('Internal Server Error');
+    });
+});
+
+app.post('/tvs', function(req, res) {
+    if ( !req.body.name || !req.body.url || !req.body.port ) {
+	console.log('Bad json file for tv');
+	return res.status(400).send(`Bad Request: url, port and name required}`);
+    }
+    var newtv = {"name":req.body.name, "url":req.body.url, "port":req.body.port};
+    console.log('POST new tv');
+
+    parseJsonFile('./displays.json')
+    .then((displaysFile) => {
+	let tvid = 0;
+	console.log(displaysFile);
+	displaysFile.map((tvobject) => {
+		if(tvobject.id >= tvid) {
+			tvid = tvobject.id + 1;
+		}
+	});
+
+	newtv.id = tvid;
+
+	displaysFile.push(newtv);
+	let strdisplays = JSON.stringify(displaysFile)
+	console.log('new displayFile %s', strdisplays);
+	return saveJsonFile('./displays.json', displaysFile);
+    })
+    .then((done) => {
+	res.status(200).send(newtv);
+    })
+    .catch((err) => {
+	console.log(err);
+	res.status(500).send('Internal Server Error');
+    });
+});
+
 
 
 app.listen(6060);
