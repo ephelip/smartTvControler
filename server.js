@@ -59,14 +59,21 @@ app.get('/channels', function(req, res) {
 });
 
 app.post('/channels', function(req, res) {
-    var channel = req.body;
     if (  !req.body.url || !req.body.description ){
       return res.status(400).send({error:" you need url and description"});
     }
 
+    var newChannel = {url: req.body.url, description: req.body.description};
     parseJsonFile("channels.json")
     .then((jsonReturned) => {
-      jsonReturned.push(req.body);
+      let newChannelNumber =0;
+      jsonReturned.map((channelObj) => {
+	 if(channelObj.channel >= newChannelNumber){
+		newChannelNumber = channelObj.channel + 1;
+	 }
+      })
+      newChannel.channel=newChannelNumber;
+      jsonReturned.push(newChannel);
       return jsonReturned;
     })
     .then((jsonUpdated) => {
@@ -74,7 +81,7 @@ app.post('/channels', function(req, res) {
       return saveJsonFile('channels.json',jsonUpdated);
     })
     .then((done) => {
-      return res.status(200).send("Successfully posted channel");
+      return res.status(200).send(newChannel);
     })
     .catch((errReturned) => {
       console.log(errReturned);
