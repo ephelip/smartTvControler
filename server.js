@@ -3,6 +3,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var fs = require('fs');
 var app = express();
+var net = require('net');
 
 //Allow all requests from all domains & localhost
 app.all('/*', function(req, res, next) {
@@ -32,6 +33,36 @@ function parseJsonFile(filepath) {
       }
     });
   });
+}
+
+function changeChannelOnTv(tvPort, tvIp, urlToSet) {
+  var client = new net.Socket();
+  return new Promise((resolve, reject) => {
+    client.connect(tvPort, tvIp, () => {
+    	console.log('Connected');
+    	client.write(urlToSet);
+    });
+
+    client.on('data', (data) => {
+    	console.log('Received: ' + data);
+    	client.destroy(); // kill client after server's response
+    });
+
+    client.on('close', () => {
+    	console.log('Connection closed');
+      return Promise.resolve(true);
+    });
+
+    client.on('timeout', () => {
+    	console.log('Connection timeout on socket');
+      return Promise.reject(new Error('Connection timeout on socketConnection timeout on socket'));
+    });
+
+    client.on('error', (err) => {
+    	console.log('Error on socket');
+      return Promise.reject(err);
+    });
+  })
 }
 
 function saveJsonFile(filepath,jsonObj) {
