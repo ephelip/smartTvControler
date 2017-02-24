@@ -1,5 +1,7 @@
+'use strict'
 var express = require('express');
 var bodyParser = require('body-parser');
+var fs = require('fs');
 var app = express();
 
 //Allow all requests from all domains & localhost
@@ -13,36 +15,48 @@ app.all('/*', function(req, res, next) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-var ingredients = [
-    {
-        "id": "234kjw",
-        "text": "Eggs"
-    },
-    {
-        "id": "as82w",
-        "text": "Milk"
-    },
-    {
-        "id": "234sk1",
-        "text": "Bacon"
-    },
-    {
-        "id": "ppo3j3",
-        "text": "Frog Legs"
-    }
-];
+function parseJsonFile(filepath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filepath, 'utf8', (err, data) => {
+      if (err) {
+	console.log("Unable to read %s", filepath);
+        return reject(err);
+      }
+      try {
+        var json = JSON.parse(data);
+        console.log("parse successfull %s", filepath);
+        return resolve(json);
+      } catch (err) {
+	console.log("Unable to parse %s", filepath);
+        return reject(err);
+      }
+    });
+  });
+}
 
-
-app.get('/ingredients', function(req, res) {
+app.get('/channels', function(req, res) {
     console.log("GET From SERVER");
-    res.send(ingredients);
+    parseJsonFile('channels.json')
+	.then((jsonReturned) => {
+    		res.status(200).send(jsonReturned);
+	})
+	.catch((errReturned) => {
+    		res.status(500).send('Erreur interne de serveur (QC powered)');
+	})
 });
 
-app.post('/ingredients', function(req, res) {
-    var ingredient = req.body;
+app.post('/channels', function(req, res) {
+    var channel = req.body;
+    if (  !req.body.url || !req.body.description ){
+      return res.status(400).send({error:" you need url and description"});
+    }
+
+    channels = parseJsonFile("channels.json");
+    channels.push(req.body);
     console.log(req.body);
-    ingredients.push(ingredient);
-    res.status(200).send("Successfully posted ingredient");
+    console.log("channel=",req.body.channel);
+    res.status(200).send("Successfully posted channel");
 });
 
-app.listen(6069);
+
+app.listen(6060);
