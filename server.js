@@ -1,7 +1,7 @@
 'use strict'
 var express = require('express');
 var bodyParser = require('body-parser');
-const fs = require('fs')
+var fs = require('fs');
 var app = express();
 var net = require('net');
 
@@ -15,6 +15,8 @@ app.all('/*', function(req, res, next) {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
+
+let currentChannelIndex = 0;
 
 function parseJsonFile(filepath) {
   return new Promise((resolve, reject) => {
@@ -77,6 +79,33 @@ function saveJsonFile(filepath,jsonObj) {
 		})
 	});
 }
+
+function autoZapCallback() {
+	console.log("auto zap");
+	parseJsonFile('channels.json')
+	.then((channels)  => {
+		currentChannelIndex++;
+		if(currentChannelIndex > channels.length){
+			currentChannelIndex = 0;
+		}
+		return channels[currentChannelIndex].url;
+	})
+	.then((channelUrl) => {
+		parseJsonFile('displays.json')
+		.then((TVs) => {
+			let promiseArrayForTVs = [];
+			TVs.map((TV) => {
+				promiseArrayForTVs.push(changeChannelOnTv(TV.port, TV.url, channelUrl))
+			})
+			return Promise.all(promiseArrayForTVs);
+		})
+	})
+	.catch ((error) => {
+		console.log(error);
+	});
+}
+
+let autoZapTimer = setInterval(autoZapCallback,10000);
 
 app.get('/channels', function(req, res) {
     console.log("GET From SERVER");
