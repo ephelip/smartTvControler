@@ -38,6 +38,7 @@ function parseJsonFile(filepath) {
 }
 
 function changeChannelOnTv(tvPort, tvIp, urlToSet) {
+  console.log(tvPort, tvIp, urlToSet);
   var client = new net.Socket();
   return new Promise((resolve, reject) => {
     client.connect(tvPort, tvIp, () => {
@@ -85,7 +86,7 @@ function autoZapCallback() {
 	parseJsonFile('channels.json')
 	.then((channels)  => {
 		currentChannelIndex++;
-		if(currentChannelIndex > channels.length){
+		if(currentChannelIndex > channels.length -1){
 			currentChannelIndex = 0;
 		}
 		return channels[currentChannelIndex].url;
@@ -93,11 +94,14 @@ function autoZapCallback() {
 	.then((channelUrl) => {
 		parseJsonFile('displays.json')
 		.then((TVs) => {
-			let promiseArrayForTVs = [];
+			// let promiseArrayForTVs = [];
 			TVs.map((TV) => {
-				promiseArrayForTVs.push(changeChannelOnTv(TV.port, TV.url, channelUrl))
+        console.log(`setting ${TV.name} to ${channelUrl}`);
+        changeChannelOnTv(TV.port, TV.url, channelUrl);
+        return;
+				// promiseArrayForTVs.push(changeChannelOnTv(TV.port, TV.url, channelUrl))
 			})
-			return Promise.all(promiseArrayForTVs);
+			// return Promise.all(promiseArrayForTVs);
 		})
 	})
 	.catch ((error) => {
@@ -198,5 +202,42 @@ app.post('/tvs', function(req, res) {
 });
 
 
+app.post('/zap', function(req, res) {
+    console.log('Channel zap requested');
+    if ( !req.body.channel ) {
+	     return res.status(400).send(`Bad Request: channel required}`);
+    }
+
+    parseJsonFile('channels.json')
+    .then((channels)  => {
+      let channelUrl;
+      channels.map((channel) => {
+        if(channel.channel == req.body.channel){
+          channelUrl = channel.url;
+        }
+      });
+      return channelUrl;
+    })
+    .then((channelUrl) => {
+      if(!channelUrl) {
+        console.log('error missing channel, cannot zap');
+        return res.status(400).send(`Bad Request: channel not found}`);
+      }
+      parseJsonFile('displays.json')
+      .then((TVs) => {
+        // let promiseArrayForTVs = [];
+        TVs.map((TV) => {
+          console.log(`setting ${TV.name} to ${channelUrl}`);
+          changeChannelOnTv(TV.port, TV.url, channelUrl);
+          clearInterval(autoZapTimer);
+          autoZapTimer = setInterval(autoZapCallback,10000);
+          
+          return res.status(200).send(`Channel changed}`);
+          // promiseArrayForTVs.push(changeChannelOnTv(TV.port, TV.url, channelUrl))
+        })
+        // return Promise.all(promiseArrayForTVs);
+      })
+    })
+})
 
 app.listen(6060);
