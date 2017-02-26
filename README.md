@@ -1,20 +1,64 @@
-###Simple Express Server
-
-The point of this simple express server is to allow front-end developers the ability to quickly serve test data via HTTP to the front-end.
-
-Often writing mock data on the front-end can take up more time than needed. Also it is important to build your front-end with HTTP requests in mind - meaning it is better to structure your front-end with the HTTP frameworks and architecture you need right from the beginning instead of adding it later and replacing your mock data.
-
-This simple server will allow you to create your HTTP front-end architecture without having to write any "fake" code.
+###Smart TV controller
 
 ###Installing & Running
 To install and run simply follow these steps:
 
 1)  Clone this repo
 
-2)  Open your terminal and run `node server.js`. If using nodemon, run `nodemon server.js`.
+2)  Open your terminal and run `npm install`
 
-3)  Your server is now available at `http://localhost:6060/`
+3)  Open your terminal and run `node server.js`. If using nodemon, run `nodemon server.js`.
 
-4)  You can run a quick test by entering this in your browser: `http://localhost:6060/animals`
+4)  Your server is now available at `http://localhost:6060/`
 
-5)  Build your test data right in the server.js file. Create new endpoints as needed
+
+### API Resources
+
+  - [GET /channels](#get-channels)
+  - [POST /channels](#post-channels)
+  - [GET /tvs](#get-tvs)
+  - [POST /zap](#post-zap)
+  - [POST /autozap](#post-autozap)
+
+### GET /channels
+
+Response body:
+
+    [{
+      "channel": 1,
+      "url": "http://www.channel1.com",
+      "description": "description for channel 1"
+    },
+    {
+      "channel": 2,
+      "url": "http://www.channel2.com",
+      "description": "description for channel 2"
+    }]
+
+### POST /channels
+
+Response body:
+
+    {
+      "channel": 3,
+      "url": "http://www.channel3.com",
+      "description": "description for channel 3"
+    }
+
+### GET /tvs
+
+Response body:
+
+    [{
+      "name": "tv one",
+      "ip": "192.168.0.1",
+      "port": 1234
+    }, {
+      "name": "tv two",
+      "ip": "192.168.0.2",
+      "port": 1234
+    }]
+
+### POST /zap
+
+### POST /autozap
