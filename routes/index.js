@@ -122,10 +122,7 @@ routes.post('/zap', (req, res) => {
 
 routes.post('/autozap', (req, res) => {
   console.log('POST /autoZap');
-  if (!req.body.channel) {
-    return res.status(400).send(`Bad Request: channel required`);
-  }
-
+  
   // Default reload time set to 10 seconds
   let reloadTime = 10000;
   if (Number.isInteger(req.body.reloadTime)) {

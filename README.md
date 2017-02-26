@@ -1,15 +1,4 @@
-###Smart TV controller
-
-###Installing & Running
-To install and run simply follow these steps:
-
-1)  Clone this repo
-
-2)  Open your terminal and run `npm install`
-
-3)  Open your terminal and run `node server.js`. If using nodemon, run `nodemon server.js`.
-
-4)  Your server is now available at `http://localhost:6060/`
+####Smart TV controller
 
 
 ### API Resources
@@ -37,6 +26,12 @@ Response body:
 
 ### POST /channels
 
+Adds a new channel to the list
+
+Required parameters in body:
+* `url` url for the channel
+* `description` short description of the channel
+
 Response body:
 
     {
@@ -61,4 +56,38 @@ Response body:
 
 ### POST /zap
 
+Force all tv or just one to display a channel.
+
+If tv parameter is not set, all tvs will update.
+
+Required parameters in body:
+* `channel`: Datatype: `integer`. the channel number
+
+Optionnal parameter in body:
+* `tv`:  Datatype: `string`. The name of the tv to update
+
+
 ### POST /autozap
+
+Force all tv or just one in autozap mode.
+TV will loop between all available channels.
+
+If tv parameter is not set, all tvs will update.
+
+Required parameters in body:
+* `channel`: Datatype: `integer`. the channel number
+
+Optionnal parameter in body:
+* `tv`:  Datatype: `string`. The name of the tv to update.
+* `reloadTime`:  Datatype: `Integer`. Time for which each channel will be displayed. Default: `10`.
+
+###Installing & Running
+To install and run simply follow these steps:
+
+* Clone this repo
+
+* Open your terminal and run `npm install`
+
+* Open your terminal and run `node server.js`. If using nodemon, run `nodemon server.js`.
+
+* Your server is now available at `http://localhost:6060/`
